@@ -201,6 +201,19 @@ public class TwitterPriceCalculator : ICalculable
   }
 }
 
+
+public class BinaryTreeIndexForData<T>
+{
+  public void Add(T item){
+  }
+
+  public T this[int index]{
+    get {
+      throw new System.NotImplementedException();
+    }
+  }
+}
+
 public class SocialNetworkAccountsApplication
 {
   static public string ConvertToString(ISocialNetworkAccount sna)
@@ -216,26 +229,42 @@ public class SocialNetworkAccountsApplication
     TwitterAccount twitter = new TwitterAccount() { FullName="Jose Camargo", Uid="15377024", ScreenName="app_config", Followers=300};
     InstagramAccount instagram = new InstagramAccount() { FullName="Jose Camargo", Uid="15377024", ScreenName="app_config", Followers=300};
 
+/*
     System.Console.WriteLine(ConvertToString(facebook));
     System.Console.WriteLine(ConvertToString(fanpage));
     System.Console.WriteLine(ConvertToString(youtube));
     System.Console.WriteLine(ConvertToString(twitter));
     System.Console.WriteLine(ConvertToString(instagram));
     System.Console.WriteLine("=============================================================");
+*/
     PriceCalculator priceCalculator = new PriceCalculator();
     priceCalculator.AddProvider("facebook", new FacebookPriceCalculator());
     priceCalculator.AddProvider("fanpage", new FanpagePriceCalculator());
     priceCalculator.AddProvider("youtube", new YoutubePriceCalculator());
     priceCalculator.AddProvider("twitter", new TwitterPriceCalculator());
     priceCalculator.AddProvider("instagram", new InstagramPriceCalculator());
-
+/*
     System.Console.WriteLine(priceCalculator.CalculatePricePerPostFor(facebook));
     System.Console.WriteLine(priceCalculator.CalculatePricePerPostFor(fanpage));
     System.Console.WriteLine(priceCalculator.CalculatePricePerPostFor(youtube));
     System.Console.WriteLine(priceCalculator.CalculatePricePerPostFor(twitter));
     System.Console.WriteLine(priceCalculator.CalculatePricePerPostFor(instagram));
+*/
 
-    SocialNetworkAccount x = new FacebookAccount();
-    System.Console.WriteLine(x);
+  //  SocialNetworkAccount x = new FacebookAccount();
+ //   System.Console.WriteLine(x);
+
+    BinaryTreeIndexForData<IFollowable> myIndex = new BinaryTreeIndexForData<IFollowable>();
+    myIndex.Add(facebook);
+    myIndex.Add(fanpage);
+    myIndex.Add(youtube);
+    myIndex.Add(twitter);
+    myIndex.Add(instagram);
+
+    BinaryTreeIndexForData<string> myIndexForString = new BinaryTreeIndexForData<string>();
+    myIndexForString.Add("hola mundo");
+
+    BinaryTreeIndexForData<int> myIndexForInt = new BinaryTreeIndexForData<int>();
+    myIndexForInt.Add(190999);
   }
 }
