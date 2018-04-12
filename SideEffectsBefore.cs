@@ -1,6 +1,11 @@
 using System.Collections.Generic;
 
-class Redis : ICache
+public interface ICache{
+  void Set(string key, string val);
+  string Get(string key);
+}
+
+class Redis:ICache
 {
   Dictionary<string, string> _store;
 
@@ -25,12 +30,11 @@ class Redis : ICache
   }
 }
 
-public interface IHttp 
-{
+public interface IHttp{
   string Get(string url);
 }
 
-class Http : IHttp
+class Http:IHttp
 {
   public string Get(string url)
   {
@@ -39,34 +43,28 @@ class Http : IHttp
   }
 }
 
-public interface ICache
-{
-  void Set(string key, string val); 
-  string Get(string key);
-}
-
-public interface ILogger
-{
+public interface ILogger{
   void Write(string message);
 }
 
-class StandardIO : ILogger
+class StandardIO:ILogger
 {
-  public void Write(string message){
+  public void Write(string message)
+  {
     System.Console.WriteLine(message);
   }
 }
-class ExchangeService<THTTPException> where THTTPException:System.Exception
+class ExchangeService
 {
   ICache _cache;
   IHttp _http;
-  ILogger _console;
+  ILogger _logger;
 
-  public ExchangeService(ICache cache, IHttp http, ILogger console){
+  public ExchangeService(ICache cache, IHttp http, ILogger logger){
     _cache = cache;
     _http = http;
-   _console = console;
-  }
+    _logger = logger;
+  } 
 
   public double ConvertTo(double Value, string CurrentCurrency, string TargetCurrency)
   {
@@ -74,29 +72,27 @@ class ExchangeService<THTTPException> where THTTPException:System.Exception
     var rate = _cache.Get(key);
 
     if(rate != null){
-      _console.Write("Se encontro la tasa en el cache" + rate);
+      _logger.Write("Se encontro la tasa en el cache" + rate);
       return Value * double.Parse(rate);
     }else{
-      _console.Write("No se encontro la tasa en el cache entonces la voy a buscar en internet");
-      string rateFromInternet;
-      try {
-        rateFromInternet = _http.Get("http://www.openexchangerates.com/?currencies="+key+"&value="+Value);
-        _cache.Set(key, rateFromInternet);
-      }
-      catch(THTTPException e){
-        _console.Write(e.Message);
-        rateFromInternet = "1";
-      }
+      _logger.Write("No se encontro la tasa en el cache entonces la voy a buscar en internet");
+      var rateFromInternet = _http.Get("http://www.openexchangerates.com/?currencies="+key+"&value="+Value);
+      _cache.Set(key, rateFromInternet);
       return Value * double.Parse(rateFromInternet);
     }
   }
 }
 
+
 public class SideEffects
 {
   static public void Main()
   {
-    var exchange = new ExchangeService<System.InvalidOperationException>(new Redis(), new Http(), new StandardIO());
+    ICache _cache = new Redis();
+    IHttp _http = new Http();
+    ILogger _logger = new  StandardIO();
+    
+    var exchange = new ExchangeService(_cache, _http, _logger);
 
     var newValue = exchange.ConvertTo(13.5, "USD", "COP");
     System.Console.WriteLine(newValue);
