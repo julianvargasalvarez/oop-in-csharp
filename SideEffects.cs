@@ -56,7 +56,13 @@ class StandardIO : ILogger
     System.Console.WriteLine(message);
   }
 }
-class ExchangeService<THTTPException> where THTTPException:System.Exception
+
+public interface IExchange
+{
+  double? ConvertTo(double Value, string From, string To);
+}
+
+class ExchangeService<THTTPException> : IExchange where THTTPException:System.Exception
 {
   ICache _cache;
   IHttp _http;
@@ -68,7 +74,7 @@ class ExchangeService<THTTPException> where THTTPException:System.Exception
    _console = console;
   }
 
-  public double ConvertTo(double Value, string CurrentCurrency, string TargetCurrency)
+  public double? ConvertTo(double Value, string CurrentCurrency, string TargetCurrency)
   {
     var key = CurrentCurrency + "-" + TargetCurrency;
     var rate = _cache.Get(key);
@@ -92,19 +98,47 @@ class ExchangeService<THTTPException> where THTTPException:System.Exception
   }
 }
 
+class ConvertTemperature : IExchange
+{
+
+  public ConvertTemperature(ILogger )
+  {
+}
+  public double? ConvertTo(double Value, string From, string To){
+    case (From) {
+
+   }
+
+  }
+}
 public class SideEffects
 {
   static public void Main()
   {
     var exchange = new ExchangeService<System.InvalidOperationException>(new Redis(), new Http(), new StandardIO());
 
-    var newValue = exchange.ConvertTo(13.5, "USD", "COP");
+//    var newValue = exchange.ConvertTo(13.5, "USD", "COP", "currency");
+//    System.Console.WriteLine(newValue);
+
+//    var newValue = exchange.ConvertTo(25, "C", "F", "temperature");
+//    System.Console.WriteLine(newValue);
+
+    newValue = exchange.ConvertTo(5, MoneyExchange.new("USD", "COP"));
+    System.Console.WriteLine(newValue);
+
+    newValue = exchange.ConvertTo(5, DistanceExchange.new("Km", "m"));
+    System.Console.WriteLine(newValue);
+
+    newValue = exchange.ConvertTo(5, TemperatureExchange.new("F", "C"));
     System.Console.WriteLine(newValue);
 
     newValue = exchange.ConvertTo(5, "USD", "COP");
     System.Console.WriteLine(newValue);
 
     newValue = exchange.ConvertTo(13.5, "USD", "BRL");
+    System.Console.WriteLine(newValue);
+
+    newValue = exchange.ConvertTo(18.5, "C", "F");
     System.Console.WriteLine(newValue);
   }
 }
