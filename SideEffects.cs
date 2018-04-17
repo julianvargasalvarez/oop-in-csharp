@@ -74,25 +74,45 @@ class ExchangeService<THTTPException> : IExchange where THTTPException:System.Ex
    _console = console;
   }
 
-  public double? ConvertTo(double Value, string CurrentCurrency, string TargetCurrency)
+  public double? ConvertTo<T>(double Value, T Exchange)
   {
-    var key = CurrentCurrency + "-" + TargetCurrency;
+   
+    var key = Exchange.CurrentUnit + "-" + Exchange.TargetUnit;
     var rate = _cache.Get(key);
 
+    // Se mantiene condicional
     if(rate != null){
       _console.Write("Se encontro la tasa en el cache" + rate);
       return Value * double.Parse(rate);
     }else{
       _console.Write("No se encontro la tasa en el cache entonces la voy a buscar en internet");
+
+
+
+
+
+
+
+
       string rateFromInternet;
       try {
         rateFromInternet = _http.Get("http://www.openexchangerates.com/?currencies="+key+"&value="+Value);
+
+        // constante para todos los convert
         _cache.Set(key, rateFromInternet);
       }
       catch(THTTPException e){
         _console.Write(e.Message);
         rateFromInternet = "1";
       }
+
+
+
+
+
+
+
+
       return Value * double.Parse(rateFromInternet);
     }
   }
@@ -132,13 +152,13 @@ public class SideEffects
     newValue = exchange.ConvertTo(5, TemperatureExchange.new("F", "C"));
     System.Console.WriteLine(newValue);
 
-    newValue = exchange.ConvertTo(5, "USD", "COP");
-    System.Console.WriteLine(newValue);
+ //   newValue = exchange.ConvertTo(5, "USD", "COP");
+ //   System.Console.WriteLine(newValue);
+ 
+ //   newValue = exchange.ConvertTo(13.5, "USD", "BRL");
+ //   System.Console.WriteLine(newValue);
 
-    newValue = exchange.ConvertTo(13.5, "USD", "BRL");
-    System.Console.WriteLine(newValue);
-
-    newValue = exchange.ConvertTo(18.5, "C", "F");
-    System.Console.WriteLine(newValue);
+ //   newValue = exchange.ConvertTo(18.5, "C", "F");
+//    System.Console.WriteLine(newValue);
   }
 }
