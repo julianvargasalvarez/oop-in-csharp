@@ -57,12 +57,7 @@ class StandardIO : ILogger
   }
 }
 
-public interface IExchange
-{
-  double? ConvertTo(double Value, string From, string To);
-}
-
-class ExchangeService<THTTPException> : IExchange where THTTPException:System.Exception
+class ExchangeService<THTTPException> where THTTPException:System.Exception
 {
   ICache _cache;
   IHttp _http;
@@ -77,60 +72,69 @@ class ExchangeService<THTTPException> : IExchange where THTTPException:System.Ex
   public double? ConvertTo<T>(double Value, T Exchange)
   {
    
-    var key = Exchange.CurrentUnit + "-" + Exchange.TargetUnit;
+    var key = Exchange.currentUnit + "-" + Exchange.targetUnit;
     var rate = _cache.Get(key);
+    double? result = null;
 
     // Se mantiene condicional
     if(rate != null){
       _console.Write("Se encontro la tasa en el cache" + rate);
-      return Value * double.Parse(rate);
+      result = Value * double.Parse(rate);
     }else{
       _console.Write("No se encontro la tasa en el cache entonces la voy a buscar en internet");
-
-
-
-
-
-
-
-
-      string rateFromInternet;
+      string? rateFromProvider;
       try {
-        rateFromInternet = _http.Get("http://www.openexchangerates.com/?currencies="+key+"&value="+Value);
-
+        rateFromProvider = Exchange.GetConversionRate(); // _http.Get("http://www.openexchangerates.com/?currencies="+key+"&value="+Value);
         // constante para todos los convert
-        _cache.Set(key, rateFromInternet);
+        if(rateFromProvider != null){
+          _cache.Set(key, rateFromProvider);
+          result = Value * double.Parse(rateFromProvider);
+        }
       }
       catch(THTTPException e){
         _console.Write(e.Message);
-        rateFromInternet = "1";
       }
-
-
-
-
-
-
-
-
-      return Value * double.Parse(rateFromInternet);
+      return result;
     }
   }
 }
 
-class ConvertTemperature : IExchange
+public class MoneyExchange
+{
+  public string targetUnit;
+  public string currrentUnit;
+
+  public MoneyExchange(string current, string target){
+    currentUnit = current;
+    targetUnit = target;
+  }
+
+  public string? GetConversionRate(Value){
+    try {
+      var _http = new Http();
+      _http.Get("http://www.openexchangerates.com/?currencies="+ this.currentUnit +"&value="+ this.targetUnit);
+    }catch(WebException ex){
+      ex.Message 
+    }
+  }
+
+}
+
+class TemperatureExchange
+{
+  public string TargetUnit;
+  public string CurrrentUnit;
+
+}
+
+class DistanceExchange
 {
 
-  public ConvertTemperature(ILogger )
-  {
-}
-  public double? ConvertTo(double Value, string From, string To){
-    case (From) {
+  public string TargetUnit { get; set; }
+  public string CurrrentUnit { get; set; }
 
-   }
-
-  }
 }
+
 public class SideEffects
 {
   static public void Main()
@@ -143,14 +147,14 @@ public class SideEffects
 //    var newValue = exchange.ConvertTo(25, "C", "F", "temperature");
 //    System.Console.WriteLine(newValue);
 
-    newValue = exchange.ConvertTo(5, MoneyExchange.new("USD", "COP"));
+    var newValue = exchange.ConvertTo(5, new MoneyExchange("USD", "COP"));
     System.Console.WriteLine(newValue);
 
-    newValue = exchange.ConvertTo(5, DistanceExchange.new("Km", "m"));
-    System.Console.WriteLine(newValue);
+  //   newValue = exchange.ConvertTo(5, DistanceExchange.new("Km", "m"));
+  //   System.Console.WriteLine(newValue);
 
-    newValue = exchange.ConvertTo(5, TemperatureExchange.new("F", "C"));
-    System.Console.WriteLine(newValue);
+   //  newValue = exchange.ConvertTo(5, TemperatureExchange.new("F", "C"));
+   //  System.Console.WriteLine(newValue);
 
  //   newValue = exchange.ConvertTo(5, "USD", "COP");
  //   System.Console.WriteLine(newValue);
