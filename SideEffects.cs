@@ -65,7 +65,6 @@ public interface IExchange{
 class ExchangeService<THTTPException> where THTTPException:System.Exception
 {
   ICache _cache;
-  IHttp _http;
   ILogger _console;
 
   public ExchangeService(ICache cache, ILogger console){
@@ -87,12 +86,15 @@ class ExchangeService<THTTPException> where THTTPException:System.Exception
     }else{
       _console.Write("No se encontro la tasa en el cache entonces la voy a buscar en internet");
       string rateFromProvider;
+
       try {
         rateFromProvider = exchange.GetConversionRate(); // _http.Get("http://www.openexchangerates.com/?currencies="+key+"&value="+Value);
         // constante para todos los convert
-        if(rateFromProvider != null){
+        double conversionRate;
+        var isNumber = double.TryParse(rateFromProvider, out conversionRate);
+        if(isNumber){
           _cache.Set(key, rateFromProvider);
-          result = Value * double.Parse(rateFromProvider);
+          result = Value * conversionRate;
           return result;
         }
       }
@@ -118,21 +120,28 @@ public class MoneyExchange : IExchange
 
   public string GetConversionRate(){
     try {
-      var _http = new Http();
       return _http.Get("http://www.openexchangerates.com/?currencies="+ this.CurrentUnit +"&value="+ this.TargetUnit);
     }
     catch(System.Net.WebException ex){
-      return "";
+      return ex.Message;
     }
   }
 
 }
 
-class TemperatureExchange
+class TemperatureExchange : IExchange
 {
-  public string TargetUnit;
-  public string CurrrentUnit;
+  public string CurrentUnit { get; set;}
+  public string TargetUnit { get; set;}
 
+  public TemperatureExchange(string current, string target){
+    CurrentUnit = current;
+    TargetUnit = target;
+  }
+
+  public string GetConversionRate(){
+    return "32";
+  }
 }
 
 class DistanceExchange
@@ -161,8 +170,8 @@ public class SideEffects
   //   newValue = exchange.ConvertTo(5, DistanceExchange.new("Km", "m"));
   //   System.Console.WriteLine(newValue);
 
-   //  newValue = exchange.ConvertTo(5, TemperatureExchange.new("F", "C"));
-   //  System.Console.WriteLine(newValue);
+     newValue = exchange.ConvertTo(5, new TemperatureExchange("C", "F"));
+     System.Console.WriteLine(newValue);
 
  //   newValue = exchange.ConvertTo(5, "USD", "COP");
  //   System.Console.WriteLine(newValue);
