@@ -144,11 +144,20 @@ class TemperatureExchange : IExchange
   }
 }
 
-class DistanceExchange
+class DistanceExchange : IExchange
 {
 
   public string TargetUnit { get; set; }
-  public string CurrrentUnit { get; set; }
+  public string CurrentUnit { get; set; }
+
+  public DistanceExchange(string current, string target){
+    CurrentUnit = current;
+    TargetUnit = target;
+  }
+
+  public string GetConversionRate(){
+    return "1000";
+  }
 
 }
 
@@ -173,6 +182,8 @@ public class SideEffects
      newValue = exchange.ConvertTo(5, new TemperatureExchange("C", "F"));
      System.Console.WriteLine(newValue);
 
+     newValue = exchange.ConvertTo(20, new DistanceExchange("Km", "M"));
+     System.Console.WriteLine(newValue);
  //   newValue = exchange.ConvertTo(5, "USD", "COP");
  //   System.Console.WriteLine(newValue);
  
